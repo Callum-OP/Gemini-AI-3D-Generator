@@ -47,7 +47,7 @@
     <input
       type="text"
       id="prompt"
-      placeholder="e.g. A wooden chair"
+      placeholder="e.g. A comfy sofa"
     />
     <button id="generate-btn">Generate Object</button>
   </div>
@@ -155,18 +155,15 @@ CRITICAL RULES:
 6. Use appropriate materials (MeshStandardMaterial, MeshPhongMaterial)
 7. Add colors and textures where appropriate
 8. Output ONLY raw JavaScript code - no markdown, no explanations
-9. Create an array named 'newMeshes' containing all created meshes
+9. Create a THREE.Group named 'meshGroup', add all meshes to it, and ensure 'meshGroup' is the final output.
 10. Example structure:
 
-const newMeshes = [];
+const meshGroup = new THREE.Group();
 
 const geometry1 = new THREE.BoxGeometry(2, 2, 2);
 const material1 = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 const mesh1 = new THREE.Mesh(geometry1, material1);
-mesh1.position.set(0, 1, 0);
-mesh1.castShadow = true;
-mesh1.receiveShadow = true;
-newMeshes.push(mesh1);
+meshGroup.add(mesh1);
 
 // Add more objects...
 
@@ -231,26 +228,23 @@ Remember: Output ONLY the JavaScript code, nothing else.`;
     generatedObjects = [];
 
     // Execute the generated code
-    let newMeshes = [];
+    let meshGroup;
     try {
-      const fn = new Function("THREE", "scene", code + "\nreturn newMeshes;");
-      newMeshes = fn(THREE, scene);
+        // We pass THREE and scene, and expect the code to return 'meshGroup'
+        const fn = new Function("THREE", "scene", code + "\nreturn meshGroup;");
+        meshGroup = fn(THREE, scene);
     } catch (execError) {
-      console.error("Code execution error:", execError);
-      throw new Error(`Failed to execute generated code: ${execError.message}`);
+        console.error("Code execution error:", execError);
+        throw new Error(`Failed to execute generated code: ${execError.message}`);
     }
 
-    if (!Array.isArray(newMeshes) || newMeshes.length === 0) {
-      throw new Error("No valid meshes were generated");
+    if (!meshGroup || !meshGroup.isGroup) {
+        throw new Error("No valid mesh group was generated");
     }
 
-    // Add meshes to scene
-    newMeshes.forEach(m => {
-      if (m && m.isMesh) {
-        scene.add(m);
-        generatedObjects.push(m);
-      }
-    });
+    // Add the group to the scene
+    scene.add(meshGroup);
+    generatedObjects.push(meshGroup); // Store the group as a single reference
 
     statusDiv.innerText = `✅ Scene built successfully (${generatedObjects.length} objects)`;
     downloadBtn.style.display = "block";
