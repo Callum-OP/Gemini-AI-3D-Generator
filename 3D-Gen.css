@@ -39,11 +39,13 @@ body {
 
 /* Labels */
 h1 {
-    font-size: 1.2rem;
-    margin: 0 0 4px 0;
-    background: linear-gradient(90deg, #4285f4, #9b72ff);
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4285f4, #34a853);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 #status {
